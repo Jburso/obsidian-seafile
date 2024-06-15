@@ -51,8 +51,8 @@ export class SeafileSettingTab extends PluginSettingTab {
 				button.onClick(async () => {
 					if (settings.account) {
 						// Log out
-						const result = await this.askClearVault("To log out, you need to clear your vault first.\n\n");
-						if (!result) return;
+						// const result = await this.askClearVault("To log out, you need to clear your vault first.\n\n");
+						// if (!result) return;
 
 						settings.account = "";
 						settings.authToken = "";

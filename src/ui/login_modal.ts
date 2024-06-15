@@ -8,18 +8,18 @@ export default class LoginModal extends Modal {
 	private deviceName: string = "obsidian-seafile";
 	constructor(app: App,
         private callback: LoginCallback,
-        private account?: string, private password?: string) {
+        private account?: string, private authToken?: string) {
 		super(app);
 	}
 
-	async login(account: string, password: string, deviceName: string): Promise<string> {
+	async login(account: string, authToken: string, deviceName: string): Promise<string> {
 		const notice = new Notice("Log in to Seafile...");
 		try {
 			const deviceIdBuffer = await crypto.subtle.digest("SHA-1", new TextEncoder().encode(deviceName));
 			const deviceId = arrayBufferToHex(deviceIdBuffer);
 
-			const authToken = await server.getAuthToken(account, password, deviceName, deviceId);
-			if (!authToken) throw new Error("Failed to get auth token");
+			// const authToken = await server.getAuthToken(account, password, deviceName, deviceId);
+			// if (!authToken) throw new Error("Failed to get auth token");
 
 			await this.callback(account, authToken, deviceName, deviceId);
 
@@ -41,7 +41,7 @@ export default class LoginModal extends Modal {
 				text.setPlaceholder(this.deviceName);
 				text.onChange(value => {
 					this.deviceName = value;
-					if (this.account && this.password && this.deviceName) loginButton.setDisabled(false);
+					if (this.account && this.authToken && this.deviceName) loginButton.setDisabled(false);
 					else loginButton.setDisabled(true);
 				});
 			});
@@ -49,17 +49,17 @@ export default class LoginModal extends Modal {
 			.setName("Account")
 			.addText(text => text.setPlaceholder("email@example.com").onChange(value => {
 				this.account = value;
-				if (this.account && this.password && this.deviceName) loginButton.setDisabled(false);
+				if (this.account && this.authToken && this.deviceName) loginButton.setDisabled(false);
 				else loginButton.setDisabled(true);
 			}));
 		new Setting(contentEl)
-			.setName("Password")
-			.addText(password => {
-				password.inputEl.type = "password";
-				password.setPlaceholder("password")
+			.setName("Auth Token")
+			.addText(authToken=> {
+				authToken.inputEl.type = "password";
+				authToken.setPlaceholder("Token")
 					.onChange(value => {
-						this.password = value;
-						if (this.account && this.password && this.deviceName) loginButton.setDisabled(false);
+						this.authToken = value;
+						if (this.account && this.authToken && this.deviceName) loginButton.setDisabled(false);
 						else loginButton.setDisabled(true);
 					});
 			});
@@ -69,9 +69,9 @@ export default class LoginModal extends Modal {
 				loginButton = button;
 				button.setButtonText("Log in");
 				button.onClick(async () => {
-					if (!this.account || !this.password || !this.deviceName) return;
+					if (!this.account || !this.authToken || !this.deviceName) return;
 					try {
-						const result = await this.login(this.account, this.password, this.deviceName);
+						const result = await this.login(this.account, this.authToken, this.deviceName);
 						if (result) this.close();
 					}
 					catch (error) {
